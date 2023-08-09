@@ -2,39 +2,60 @@ public with sharing class MaintenanceRequestHelper {
     public static void createWorkOrders(Map<Id, Case> mapMaintanceRequests) {
 
         set<Id> setRequests = mapMaintanceRequests.keySet();
-        List<case> lstNewCases = new List<Case>();
-        List<Equipment_Maintenance_Item__c> lstRelatedItems = new List<Equipment_Maintenance_Item__c>();
+        List<case> lstNewRequests = new List<Case>();
         Map<String,List<Equipment_Maintenance_Item__c>> mapMaintanceToItems = getMapRequestToItems(setRequests);
-        Map<String, Case> mapOldToNewCases = new Map<String, Case>();
+        Map<String, Case> mapOldToNewRequests = new Map<String, Case>();
 
-        
-        for(String maintanceRequest : mapMaintanceToItems.keyset()){
+        for(Case maintanceRequest : [
+                Select Id, Vehicle__c, Product__c, Type, Subject, Status, 
+                (SELECT Id, Maintenance_Request__c, Equipment__c,Equipment__r.Maintenance_Cycle__c, Quantity__c
+                FROM Equipment_Maintenance_Items__r) 
+                FROM Case 
+                WHERE Id =:setRequests]){
 
-            Case request = mapMaintanceRequests.get(maintanceRequest);
-            List<Equipment_Maintenance_Item__c> lstItems = mapMaintanceToItems.get(maintanceRequest);
-            if(request.Type.Contains('repair') || request.Type.Contains('Routine Maintenance') && request.Status == 'Closed'){
+                    List<Equipment_Maintenance_Item__c> lstMaintenanceItems = maintanceRequest.Equipment_Maintenance_Items__r;
 
-                Case newCase = new Case(
-                    Vehicle__c = request.Vehicle__c,
-                    Product__c = request.Product__c,
-                    Type = 'Routine Maintenance',
-                    Subject = request.Subject,
-                    Status = 'New'
-                     );
-                     lstNewCases.add(newCase);
-                     mapOldToNewCases.put(maintanceRequest, newCase);  
+                Decimal daysToAdd = 0;
+                Integer i = 0;
+                do {
+                    Decimal cycle = lstMaintenanceItems[i].Equipment__r.Maintenance_Cycle__c;
+                    if(i == 0){
+                        daysToAdd = cycle;
+                    } else if (daysToAdd < cycle) {
+                        daysToAdd = cycle;
+                    }
+                    
+                        System.debug('daysToAdd' + daysToAdd);
+                    
+                        i++;
+                    } while (i < lstMaintenanceItems.size());
+
+                if(maintanceRequest.Type.Contains('repair') || maintanceRequest.Type.Contains('Routine Maintenance') && maintanceRequest.Status == 'Closed'){
+
+                    Case newRequest = new Case(
+                        Vehicle__c = maintanceRequest.Vehicle__c,
+                        Product__c = maintanceRequest.Product__c,
+                        Type = 'Routine Maintenance',
+                        Subject = maintanceRequest.Subject,
+                        Status = 'New'
+                        );
+                        Date today = System.today();
+                        Date dueDate = today.addDays(Integer.valueOf(daysToAdd));
+                        newRequest.Date_Due__c = dueDate;
+                        lstNewRequests.add(newRequest);
+                        mapOldToNewRequests.put(String.valueOf(maintanceRequest.Id), newRequest);  
+                }
+                
             }
-            
-        }
-        Insert lstNewCases;
-        List<Equipment_Maintenance_Item__c> lstMaintenanceItemsToUpdate = createEquipmentItems(mapOldToNewCases,mapMaintanceToItems);
-        Insert lstMaintenanceItemsToUpdate;
+            Insert lstNewRequests;
+            List<Equipment_Maintenance_Item__c> lstMaintenanceItemsToUpdate = createEquipmentItems(mapOldToNewRequests,mapMaintanceToItems);
+            Insert lstMaintenanceItemsToUpdate;
     }
 
     Public Static Map<String,List<Equipment_Maintenance_Item__c>> getMapRequestToItems(Set<Id> requests){
         Map<Id, Case> maintanceRequest = new Map<Id, Case>([
             Select Id, Vehicle__c, Product__c, Type, Subject, Status, 
-            (SELECT Id, Maintenance_Request__c, Equipment__c, Quantity__c
+            (SELECT Id, Maintenance_Request__c, Equipment__c,Equipment__r.Maintenance_Cycle__c, Quantity__c
             FROM Equipment_Maintenance_Items__r) 
             FROM Case 
             WHERE Id =:requests]);
