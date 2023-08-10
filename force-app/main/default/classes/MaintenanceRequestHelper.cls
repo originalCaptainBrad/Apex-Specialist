@@ -1,6 +1,7 @@
 public with sharing class MaintenanceRequestHelper {
+    // Integer j = 0;
+    // integer k = 0;
     public static void createWorkOrders(Map<Id, Case> mapMaintanceRequests) {
-
         set<Id> setRequests = mapMaintanceRequests.keySet();
         List<case> lstNewRequests = new List<Case>();
         Map<String,List<Equipment_Maintenance_Item__c>> mapMaintanceToItems = getMapRequestToItems(setRequests);
@@ -12,7 +13,7 @@ public with sharing class MaintenanceRequestHelper {
                 FROM Equipment_Maintenance_Items__r) 
                 FROM Case 
                 WHERE Id =:setRequests]){
-
+                    
                     List<Equipment_Maintenance_Item__c> lstMaintenanceItems = maintanceRequest.Equipment_Maintenance_Items__r;
 
                 Decimal daysToAdd = 0;
@@ -58,7 +59,10 @@ public with sharing class MaintenanceRequestHelper {
             Insert lstNewRequests;
             List<Equipment_Maintenance_Item__c> lstMaintenanceItemsToUpdate = createEquipmentItems(mapOldToNewRequests,mapMaintanceToItems);
             Insert lstMaintenanceItemsToUpdate;
+            // j++;
+            // System.debug('@#$ maintanceRequest fired j = '+j);
     }
+
 
     Public Static Map<String,List<Equipment_Maintenance_Item__c>> getMapRequestToItems(Set<Id> requests){
         Map<Id, Case> maintanceRequest = new Map<Id, Case>([
@@ -68,6 +72,8 @@ public with sharing class MaintenanceRequestHelper {
             FROM Case 
             WHERE Id =:requests]);
 
+            // k++;
+            // system.debug('@#$ getMapRequestToItems query Fired k = '+k);
         Map<String,List<Equipment_Maintenance_Item__c>> mapCaseToItems = new Map<String,List<Equipment_Maintenance_Item__c>>();
         for(String key : maintanceRequest.keyset()){
 
@@ -99,4 +105,7 @@ public with sharing class MaintenanceRequestHelper {
         }
       return newMaintenanceItems;  
     }
+
+
+    
 }
