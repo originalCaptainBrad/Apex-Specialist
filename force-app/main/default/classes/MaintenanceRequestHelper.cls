@@ -17,18 +17,22 @@ public with sharing class MaintenanceRequestHelper {
 
                 Decimal daysToAdd = 0;
                 Integer i = 0;
-                do {
-                    Decimal cycle = lstMaintenanceItems[i].Equipment__r.Maintenance_Cycle__c;
-                    if(i == 0){
-                        daysToAdd = cycle;
-                    } else if (daysToAdd < cycle) {
-                        daysToAdd = cycle;
-                    }
-                    
-                        System.debug('daysToAdd' + daysToAdd);
-                    
-                        i++;
-                    } while (i < lstMaintenanceItems.size());
+                if(!lstMaintenanceItems.isEmpty()){
+                    do {
+                        Decimal cycle = lstMaintenanceItems[i].Equipment__r.Maintenance_Cycle__c;
+                        if(cycle != null && !lstMaintenanceItems.isEmpty()){
+                            if(i == 0){
+                                daysToAdd = cycle;
+                            } else if (daysToAdd < cycle) {
+                                daysToAdd = cycle;
+                            }
+                        }
+                        
+                            System.debug('daysToAdd' + daysToAdd);
+                        
+                            i++;
+                        } while (i < lstMaintenanceItems.size());
+                }
 
                 if(maintanceRequest.Type.Contains('repair') || maintanceRequest.Type.Contains('Routine Maintenance') && maintanceRequest.Status == 'Closed'){
 
@@ -40,8 +44,12 @@ public with sharing class MaintenanceRequestHelper {
                         Status = 'New'
                         );
                         Date today = System.today();
-                        Date dueDate = today.addDays(Integer.valueOf(daysToAdd));
-                        newRequest.Date_Due__c = dueDate;
+                        newRequest.Date_Due__c = today;
+                        if(!lstMaintenanceItems.isEmpty()){
+                            Date dueDate = today.addDays(Integer.valueOf(daysToAdd));
+                            newRequest.Date_Due__c = dueDate;
+                        }
+
                         lstNewRequests.add(newRequest);
                         mapOldToNewRequests.put(String.valueOf(maintanceRequest.Id), newRequest);  
                 }
