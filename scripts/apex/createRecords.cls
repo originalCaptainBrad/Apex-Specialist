@@ -1,4 +1,6 @@
-list<Case> cases = [SELECT ID, Type, Status FROM Case];
+
+public static void updateCases(){
+    list<Case> cases = [SELECT ID, Type, Status FROM Case];
 list<Case> casesToUpdate = new list<Case>();
 
 for(Case c : cases){
@@ -8,3 +10,5 @@ for(Case c : cases){
     casesToUpdate.add(c);
 }
 update casesToUpdate;
+}
+
