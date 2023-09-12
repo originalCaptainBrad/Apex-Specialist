@@ -19,27 +19,27 @@ public with sharing class MaintenanceRequestHelper {
                     for(Equipment_Maintenance_Item__c item : lstMaintenanceItems){
                         System.debug('item = '+item);
                     }
-                Decimal daysToAdd;
+                Decimal dueDate;
                 Integer i = 0;
                 if(!lstMaintenanceItems.isEmpty()){
                     do {
                         Decimal cycle = lstMaintenanceItems[i].Equipment__r.Maintenance_Cycle__c;
                         System.debug('cycle '+i+' = '+cycle);
                         if(cycle != null && !lstMaintenanceItems.isEmpty()){
-                            if(daysToAdd == null){
-                                daysToAdd = cycle;
-                            } else if(daysToAdd > cycle){
-                                daysToAdd = cycle;
+                            if(dueDate == null){
+                                dueDate = cycle;
+                            } else if(dueDate > cycle){
+                                dueDate = cycle;
                             }
                         }
                         
-                            System.debug('daysToAdd' + daysToAdd);
+                            System.debug('dueDate' + dueDate);
                         
                             i++;
                         } while (i < lstMaintenanceItems.size());
                 }
 
-                System.debug('daysToAdd = '+daysToAdd);
+                System.debug('dueDate = '+dueDate);
                 if(maintanceRequest.Type.Contains('repair') || maintanceRequest.Type.Contains('Routine Maintenance') && maintanceRequest.Status == 'Closed'){
 
                     Case newRequest = new Case(
@@ -52,8 +52,8 @@ public with sharing class MaintenanceRequestHelper {
                         Date today = System.today();
                         newRequest.Date_Due__c = today;
                         if(!lstMaintenanceItems.isEmpty()){
-                            Date dueDate = today.addDays(Integer.valueOf(daysToAdd));
-                            newRequest.Date_Due__c = dueDate;
+                            Date nextDueDate = today.addDays(Integer.valueOf(dueDate));
+                            newRequest.Date_Due__c = nextDueDate;
                         }
 
                         lstNewRequests.add(newRequest);

@@ -4,72 +4,31 @@ private class MaintenanceRequestHelperTest {
     @TestVisible private static Vehicle__c vehicle = new Vehicle__c();
     @TestVisible private static Case request = new Case();
     @TestVisible private static Map<Id,Case> requestMap = new Map<Id,Case>();
-    //@TestVisible private static Map<Id,Case> newRequestMap = new Map<Id,Case>();
     @TestVisible private static Product2 equipment = new Product2();
     @TestVisible private static Equipment_Maintenance_Item__c maintanceItem = new Equipment_Maintenance_Item__c();
 
     @TestSetup
     static void setup(){
 
-        Vehicle__c vehicle = new Vehicle__c(
-            name='Test Car'
-        );
-        insert vehicle;
-
-        Case request = new Case(
-            Type = 'Routine Maintenance',
-            Status = 'New',
-            Vehicle__c = vehicle.Id,
-            Product__c = 'Test Product',
-            Subject = 'Test Subject'
-        );
-        insert request;
-
-        request.Status = 'closed';
-        update request;
-        // Date today = System.today();
-        // Double todayInNumber = Double.valueOf(today);
-        Product2 equipment = new Product2(
-            Name ='Test Equipment',
-            Replacement_Part__c = true
-        );
-        insert equipment;
-
-        List<Equipment_Maintenance_Item__c> lstmaintanceItem = new List<Equipment_Maintenance_Item__c>();
-
-        for(Integer i = 0; i < 10; i++){
-        Equipment_Maintenance_Item__c maintanceItem = new Equipment_Maintenance_Item__c(
-            Maintenance_Request__c = request.Id,
-            Equipment__c = equipment.Id
-        );
-
-        lstmaintanceItem.add(maintanceItem);
-        }
-        insert lstmaintanceItem;
-
-        Equipment_Maintenance_Item__c maintanceItem = new Equipment_Maintenance_Item__c(
-            Maintenance_Request__c = request.Id,
-            Equipment__c = equipment.Id
-        );
-        insert maintanceItem;
-
-
-        for(Case req : [Select Id, Vehicle__c, Product__c, Type, Subject, Status, 
-                (SELECT Id, Maintenance_Request__c, Equipment__c,Equipment__r.Maintenance_Cycle__c, Quantity__c
-                FROM Equipment_Maintenance_Items__r) 
-                FROM Case ]){
-                    requestMap.put(req.Id, req);
-                }
+        TestDataFactory.generateMaintanceRequestdata();
     }
 
     @isTest
     static void testCreateWorkOrders() {
 
-        // for(Id req : requestMap.keySet()){
-        //     Case request = requestMap.get(req);
-        //     request.status = 'closed';
-        //     requestMap.put(req, request);
-        // }
+        Integer counter = 0;
+        for(Case req : [Select Id, Vehicle__c, Product__c, Type, Subject, Status, 
+                (SELECT Id, Maintenance_Request__c, Equipment__c,Equipment__r.Maintenance_Cycle__c, Quantity__c
+                FROM Equipment_Maintenance_Items__r) 
+                FROM Case ]){
+            req.status = 'closed';
+            for(Equipment_Maintenance_Item__c Equipment : req.Equipment_Maintenance_Items__r){
+                counter++;
+                Equipment.Equipment__r.Maintenance_Cycle__c = 30+counter;
+                update Equipment;
+            }
+            update req;
+        }
 
         Test.startTest();
         // MaintenanceRequestHelper.createWorkOrders(requestMap);
