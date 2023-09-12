@@ -16,15 +16,19 @@ public with sharing class MaintenanceRequestHelper {
                     
                     List<Equipment_Maintenance_Item__c> lstMaintenanceItems = maintanceRequest.Equipment_Maintenance_Items__r;
 
-                Decimal daysToAdd = 0;
+                    for(Equipment_Maintenance_Item__c item : lstMaintenanceItems){
+                        System.debug('item = '+item);
+                    }
+                Decimal daysToAdd;
                 Integer i = 0;
                 if(!lstMaintenanceItems.isEmpty()){
                     do {
                         Decimal cycle = lstMaintenanceItems[i].Equipment__r.Maintenance_Cycle__c;
+                        System.debug('cycle '+i+' = '+cycle);
                         if(cycle != null && !lstMaintenanceItems.isEmpty()){
-                            if(i == 0){
+                            if(daysToAdd == null){
                                 daysToAdd = cycle;
-                            } else if (daysToAdd < cycle) {
+                            } else if(daysToAdd > cycle){
                                 daysToAdd = cycle;
                             }
                         }
@@ -35,6 +39,7 @@ public with sharing class MaintenanceRequestHelper {
                         } while (i < lstMaintenanceItems.size());
                 }
 
+                System.debug('daysToAdd = '+daysToAdd);
                 if(maintanceRequest.Type.Contains('repair') || maintanceRequest.Type.Contains('Routine Maintenance') && maintanceRequest.Status == 'Closed'){
 
                     Case newRequest = new Case(
@@ -59,6 +64,8 @@ public with sharing class MaintenanceRequestHelper {
             Insert lstNewRequests;
             List<Equipment_Maintenance_Item__c> lstMaintenanceItemsToUpdate = createEquipmentItems(mapOldToNewRequests,mapMaintanceToItems);
             Insert lstMaintenanceItemsToUpdate;
+            System.debug('lstNewRequests = '+lstNewRequests);
+            System.debug('lstMaintenanceItemsToUpdate = '+lstMaintenanceItemsToUpdate);
             // j++;
             // System.debug('@#$ maintanceRequest fired j = '+j);
     }
