@@ -1,21 +1,25 @@
 @isTest
 private class MaintenanceRequestHelperTest {
 
+    //Create test variables and test collections to access throughtout the test class
     @TestVisible private static Vehicle__c vehicle = new Vehicle__c();
     @TestVisible private static Case request = new Case();
     @TestVisible private static Map<Id,Case> requestMap = new Map<Id,Case>();
     @TestVisible private static Product2 equipment = new Product2();
     @TestVisible private static Equipment_Maintenance_Item__c maintanceItem = new Equipment_Maintenance_Item__c();
+    @TestVisible private static Integer num = 0;
 
     @TestSetup
     static void setup(){
-
-        TestDataFactory.generateMaintanceRequestdata();
+        //Create test data to access throughtout the test methods
+        num = 10;
+        TestDataFactory.generateMaintanceRequestdata(num);
     }
 
     @isTest
     static void testCreateWorkOrders() {
 
+        Test.startTest();
         Integer counter = 0;
         for(Case req : [Select Id, Vehicle__c, Product__c, Type, Subject, Status, 
                 (SELECT Id, Maintenance_Request__c, Equipment__c,Equipment__r.Maintenance_Cycle__c, Quantity__c
@@ -29,31 +33,26 @@ private class MaintenanceRequestHelperTest {
             }
             update req;
         }
-
-        Test.startTest();
-        // MaintenanceRequestHelper.createWorkOrders(requestMap);
         Test.stopTest();
 
         // Verify records are created
         List<Case> newCases = [SELECT Id FROM Case WHERE Status = 'New'];
-        System.assertEquals(2, newCases.size());
-
         List<Equipment_Maintenance_Item__c> itemRecords = [SELECT Id FROM Equipment_Maintenance_Item__c WHERE Maintenance_Request__c = :newCases[0].Id];
         System.assertEquals(11, itemRecords.size());
+        System.assertEquals(num, newCases.size());
+        System.assertNotEquals(null, newCases.size());
     }
 
     @isTest
     static void testGetMapRequestToItems() {
-        Case request = new Case(Type = 'Routine Maintenance', Status = 'Closed');
-        insert request;
 
-        Equipment_Maintenance_Item__c maintanceItem = new Equipment_Maintenance_Item__c(Maintenance_Request__c = request.Id);
-        insert maintanceItem;
-
-        Set<Id> testRequestIds = new Set<Id>{request.Id};
+        Set<Id> requestIds = new Set<Id>();
+        for(Case req : [Select Id FROM Case ]){
+                requestIds.add(req.Id);
+                }
 
         Test.startTest();
-        Map<String, List<Equipment_Maintenance_Item__c>> resultMap = MaintenanceRequestHelper.getMapRequestToItems(testRequestIds);
+        Map<String, List<Equipment_Maintenance_Item__c>> resultMap = MaintenanceRequestHelper.getMapRequestToItems(requestIds);
         Test.stopTest();
 
         List<Equipment_Maintenance_Item__c> itemsList = resultMap.get(request.Id);
@@ -63,21 +62,7 @@ private class MaintenanceRequestHelperTest {
 
     @isTest
     static void testCreateEquipmentItems() {
-        Case testCase = new Case(Type = 'Routine Maintenance', Status = 'Closed');
-        insert testCase;
 
-        Product2 equipment = new Product2(
-            Name ='Test Equipment',
-            Replacement_Part__c = true
-        );
-        insert equipment;
-
-        Equipment_Maintenance_Item__c maintanceItem = new Equipment_Maintenance_Item__c(
-            Maintenance_Request__c = testCase.Id,
-            Equipment__c = equipment.Id,
-            Quantity__c = 2
-        );
-        insert maintanceItem;
 
         Map<String, Case> oldToNewCaseMap = new Map<String, Case>{testCase.Id => testCase};
         Map<String, List<Equipment_Maintenance_Item__c>> requestToItemsMap = new Map<String, List<Equipment_Maintenance_Item__c>>{testCase.Id => new List<Equipment_Maintenance_Item__c>{maintanceItem}};

@@ -1,8 +1,7 @@
 public without sharing class TestDataFactory {
 
-    public static void generateMaintanceRequestdata(){
+    public static void generateMaintanceRequestdata(Integer testRecords){
 
-        Integer testRecords = 10;
         List<Vehicle__c> vehicles = new List<Vehicle__c>();
         List<Case> requests = new List<Case>();
         List<Product2> lstEquipment = new List<Product2>();
