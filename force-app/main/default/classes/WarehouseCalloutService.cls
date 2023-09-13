@@ -2,23 +2,44 @@ global class WarehouseCalloutService implements Queueable, Database.AllowsCallou
 
     public void execute(QueueableContext context) {
 
-        list<product2> lstInventoryToUpdate = new list<product2>();
+        HttpResponse httpBody = makeCallout();
+        String responseBody = httpBody.getBody();
+        List<JSON2Apex> parseEquipment = JSON2Apex.parse(responseBody);
+        List<Product2> inventoriesToUpdate = parseNewInventory(parseEquipment);
+
+        upsert inventoriesToUpdate;
+    }
+
+        public static HttpResponse makeCallout() {
+
+            list<External_Equipment_Integration__mdt> mdtRecord = [
+            SELECT Api_Endpoint__c, List_Of_Equipment__c 
+            FROM External_Equipment_Integration__mdt];
+
+            string endpoint = string.valueOf(mdtRecord[0].Api_Endpoint__c);
+            string body;
+            HttpResponse response;
+            HttpRequest request = new HttpRequest();
+            request.setEndpoint(endpoint);
+            request.setMethod('GET');
+            Http http = new Http();
+            response = http.send(request);
+            String responseBody = response.getBody();
+
+        return response;
+    }
+
+    public static List<Product2> parseNewInventory(List<JSON2Apex> parseItems){
+
         map<string,product2> productInventory = new map<string,product2>();
 
         for(product2 prodMap : [SELECT Id, Replacement_Part__c, Cost__c, Current_Inventory__c, Lifespan_Months__c, Maintenance_Cycle__c, Warehouse_SKU__c FROM product2]){
             productInventory.put(prodMap.Warehouse_SKU__c, prodMap);
         }
+        
+        list<product2> lstInventoryToUpdate = new list<product2>();
 
-        HttpResponse httpBody = makeCallout();
-        String responseBody = httpBody.getBody();
-        system.debug(responseBody);
-        system.debug(responseBody);
-
-        List<JSON2Apex> parseEquipment = JSON2Apex.parse(responseBody);
-
-        system.debug(parseEquipment);
-
-        for(JSON2Apex inv : parseEquipment){
+        for(JSON2Apex inv : parseItems){
 
             product2 prod = productInventory.get(inv.x_id);
             if(prod != null){
@@ -41,32 +62,6 @@ global class WarehouseCalloutService implements Queueable, Database.AllowsCallou
                     lstInventoryToUpdate.add(prod2);
             }
         }
-
-        System.debug(lstInventoryToUpdate);
-        upsert lstInventoryToUpdate;
-    }
-
-        public static HttpResponse makeCallout() {
-
-            list<External_Equipment_Integration__mdt> mdtRecord = [
-            SELECT Api_Endpoint__c, List_Of_Equipment__c 
-            FROM External_Equipment_Integration__mdt];
-
-            string endpoint = string.valueOf(mdtRecord[0].Api_Endpoint__c);
-            string body;
-
-            HttpResponse response;
-            HttpRequest request = new HttpRequest();
-            request.setEndpoint(endpoint);
-            request.setMethod('GET');
-    
-            Http http = new Http();
-    
-            System.debug('request = '+request);
-
-            response = http.send(request);
-            String responseBody = response.getBody();
-
-        return response;
+        return lstInventoryToUpdate;
     }
 }
