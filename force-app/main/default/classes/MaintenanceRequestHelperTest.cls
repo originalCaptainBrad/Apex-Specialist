@@ -1,16 +1,12 @@
 @isTest
 private class MaintenanceRequestHelperTest {
 
-    @TestVisible private static Vehicle__c vehicle = new Vehicle__c();
-    @TestVisible private static Case request = new Case();
-    @TestVisible private static Map<Id,Case> requestMap = new Map<Id,Case>();
-    @TestVisible private static Product2 equipment = new Product2();
     @TestVisible private static Equipment_Maintenance_Item__c maintenanceItem = new Equipment_Maintenance_Item__c();
-    @TestVisible private static Integer num = 0;
 
     @TestSetup
     static void setup(){
-        num = 10;
+        
+        Integer num = 10;
         TestDataFactory.generateMaintanceRequestdata(num);
     }
 
@@ -36,7 +32,7 @@ private class MaintenanceRequestHelperTest {
         List<Case> newCases = [SELECT Id FROM Case WHERE Status = 'New'];
         List<Equipment_Maintenance_Item__c> itemRecords = [SELECT Id FROM Equipment_Maintenance_Item__c WHERE Maintenance_Request__c = :newCases[0].Id];
         System.assertEquals(11, itemRecords.size());
-        System.assertEquals(num, newCases.size());
+        System.assertEquals(10, newCases.size());
         System.assertNotEquals(null, newCases.size());
     }
 
@@ -52,7 +48,7 @@ private class MaintenanceRequestHelperTest {
         Map<String, List<Equipment_Maintenance_Item__c>> resultMap = MaintenanceRequestHelper.getMapRequestToItems(requestIds);
         Test.stopTest();
 
-        List<Equipment_Maintenance_Item__c> itemsList = resultMap.get(request.Id);
+        List<Equipment_Maintenance_Item__c> itemsList = resultMap.get(requestIds);
         System.assertNotEquals(null, itemsList);
         System.assertEquals(1, itemsList.size());
     }
