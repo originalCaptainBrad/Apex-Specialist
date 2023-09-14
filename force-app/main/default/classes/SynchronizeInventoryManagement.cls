@@ -1,9 +1,0 @@
-global class SynchronizeInventoryManagement implements Schedulable {
-
-    global void execute(SchedulableContext sc) {
-        WarehouseCalloutService b = new WarehouseCalloutService(); 
-        System.enqueueJob(b);
-    }
-
-
-}
