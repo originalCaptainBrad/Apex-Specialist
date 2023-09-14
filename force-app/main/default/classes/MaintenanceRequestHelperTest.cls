@@ -5,7 +5,7 @@ private class MaintenanceRequestHelperTest {
     @TestVisible private static Case request = new Case();
     @TestVisible private static Map<Id,Case> requestMap = new Map<Id,Case>();
     @TestVisible private static Product2 equipment = new Product2();
-    @TestVisible private static Equipment_Maintenance_Item__c maintanceItem = new Equipment_Maintenance_Item__c();
+    @TestVisible private static Equipment_Maintenance_Item__c maintenanceItem = new Equipment_Maintenance_Item__c();
     @TestVisible private static Integer num = 0;
 
     @TestSetup
@@ -62,7 +62,7 @@ private class MaintenanceRequestHelperTest {
 
 
         Map<String, Case> oldToNewCaseMap = new Map<String, Case>{testCase.Id => testCase};
-        Map<String, List<Equipment_Maintenance_Item__c>> requestToItemsMap = new Map<String, List<Equipment_Maintenance_Item__c>>{testCase.Id => new List<Equipment_Maintenance_Item__c>{maintanceItem}};
+        Map<String, List<Equipment_Maintenance_Item__c>> requestToItemsMap = new Map<String, List<Equipment_Maintenance_Item__c>>{testCase.Id => new List<Equipment_Maintenance_Item__c>{maintenanceItem}};
 
         Test.startTest();
         List<Equipment_Maintenance_Item__c> newItemList = MaintenanceRequestHelper.createEquipmentItems(oldToNewCaseMap, requestToItemsMap);
@@ -71,7 +71,7 @@ private class MaintenanceRequestHelperTest {
         System.assertEquals(1, newItemList.size());
         Equipment_Maintenance_Item__c newItem = newItemList[0];
         System.assertEquals(testCase.Id, newItem.Maintenance_Request__c);
-        System.assertEquals(maintanceItem.Equipment__c, newItem.Equipment__c);
-        System.assertEquals(maintanceItem.Quantity__c, newItem.Quantity__c);
+        System.assertEquals(maintenanceItem.Equipment__c, newItem.Equipment__c);
+        System.assertEquals(maintenanceItem.Quantity__c, newItem.Quantity__c);
     }
 }

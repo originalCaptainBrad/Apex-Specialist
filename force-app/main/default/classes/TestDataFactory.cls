@@ -35,19 +35,19 @@ public without sharing class TestDataFactory {
         }
         insert lstEquipment;
 
-        List<Equipment_Maintenance_Item__c> lstmaintanceItem = new List<Equipment_Maintenance_Item__c>();
+        List<Equipment_Maintenance_Item__c> lstmaintenanceItem= new List<Equipment_Maintenance_Item__c>();
 
         for(Integer i = 0; i < requests.size()-1; i++){
 
             for(Integer j = 0; j < lstEquipment.size(); j++){
-            Equipment_Maintenance_Item__c maintanceItem = new Equipment_Maintenance_Item__c(
+            Equipment_Maintenance_Item__c maintenanceItem= new Equipment_Maintenance_Item__c(
                 Maintenance_Request__c = requests[i].Id,
                 Equipment__c = lstEquipment[j].Id
             );
 
-            lstmaintanceItem.add(maintanceItem);
+            lstmaintenanceItem.add(maintenanceItem);
             }
         }
-        insert lstmaintanceItem;
+        insert lstmaintenanceItem;
     }
 }
