@@ -27,7 +27,7 @@ private class WarehouseCalloutServiceTest {
         );
         insert product;
 
-        List<JSON2Apex> parseEquipment = JSON2Apex.parse(mockResponse);
+        List<parseEquipment> parseEquipment = parseEquipment.parse(mockResponse);
         List<Product2> inventoriesToUpdate = WarehouseCalloutService.parseNewInventory(parseEquipment);
         for(Integer i = 0; i < 1; i++ ){
             Product2 prod = WarehouseCalloutService.updateProducts(inventoriesToUpdate[i], parseEquipment[i]);

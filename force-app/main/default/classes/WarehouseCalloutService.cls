@@ -6,7 +6,7 @@ global class WarehouseCalloutService implements Queueable, Database.AllowsCallou
 
         String responseBody = httpBody.getBody();
 
-        List<JSON2Apex> parseEquipment = JSON2Apex.parse(responseBody);
+        List<ParseEquipment> parseEquipment = ParseEquipment.parse(responseBody);
         
         List<Product2> inventoriesToUpdate = parseNewInventory(parseEquipment);
 
@@ -32,7 +32,7 @@ global class WarehouseCalloutService implements Queueable, Database.AllowsCallou
         return response;
     }
 
-    public static List<Product2> parseNewInventory(List<JSON2Apex> parseItems){
+    public static List<Product2> parseNewInventory(List<ParseEquipment> parseItems){
 
         map<string,product2> productInventory = new map<string,product2>();
 
@@ -42,40 +42,39 @@ global class WarehouseCalloutService implements Queueable, Database.AllowsCallou
         
         list<product2> lstInventoryToUpdate = new list<product2>();
 
-        for(JSON2Apex inv : parseItems){
-            system.debug('Inventory = '+inv);
-            product2 productToSku = productInventory.get(inv.sku);
+        for(ParseEquipment equipment : parseItems){
+            system.debug('Inventory = '+equipment);
+            product2 productToSku = productInventory.get(equipment.sku);
             system.debug('productToSku is : '+productToSku);
             if(productToSku != null){
-                productToSku.Replacement_Part__c = inv.replacement;
-                productToSku.Cost__c = inv.cost;
-                productToSku.Current_Inventory__c = inv.quantity;
-                productToSku.Lifespan_Months__c = inv.lifespan;
-                productToSku.Maintenance_Cycle__c = inv.maintenanceperiod;
-                //prod = updateProducts(prod, inv);
+                productToSku.Replacement_Part__c = equipment.replacement;
+                productToSku.Cost__c = equipment.cost;
+                productToSku.Current_Inventory__c = equipment.quantity;
+                productToSku.Lifespan_Months__c = equipment.lifespan;
+                productToSku.Maintenance_Cycle__c = equipment.maintenanceperiod;
 
                 lstInventoryToUpdate.add(productToSku);
             } else if(productToSku == null){
                 product2 prod2 = new product2();
-                    prod2.Name = inv.name;
-                    prod2.Replacement_Part__c = inv.replacement;
-                    prod2.Cost__c = inv.cost;
-                    prod2.Current_Inventory__c = inv.quantity;
-                    prod2.Lifespan_Months__c = inv.lifespan;
-                    prod2.Maintenance_Cycle__c = inv.maintenanceperiod;
-                	prod2.Warehouse_SKU__c = inv.sku;
+                    prod2.Name = equipment.name;
+                    prod2.Replacement_Part__c = equipment.replacement;
+                    prod2.Cost__c = equipment.cost;
+                    prod2.Current_Inventory__c = equipment.quantity;
+                    prod2.Lifespan_Months__c = equipment.lifespan;
+                    prod2.Maintenance_Cycle__c = equipment.maintenanceperiod;
+                	prod2.Warehouse_SKU__c = equipment.sku;
                     lstInventoryToUpdate.add(prod2);
             }
         }
         return lstInventoryToUpdate;
     }
     
-    public static Product2 updateProducts(Product2 prod, JSON2Apex inv){
-                prod.Replacement_Part__c = inv.replacement;
-                prod.Cost__c = inv.cost;
-                prod.Current_Inventory__c = inv.quantity;
-                prod.Lifespan_Months__c = inv.lifespan;
-                prod.Maintenance_Cycle__c = inv.maintenanceperiod;
-                return prod;
+    public static Product2 updateProducts(Product2 product, ParseEquipment equipment){
+                product.Replacement_Part__c = equipment.replacement;
+                product.Cost__c = equipment.cost;
+                product.Current_Inventory__c = equipment.quantity;
+                product.Lifespan_Months__c = equipment.lifespan;
+                product.Maintenance_Cycle__c = equipment.maintenanceperiod;
+                return product;
     }
 }
