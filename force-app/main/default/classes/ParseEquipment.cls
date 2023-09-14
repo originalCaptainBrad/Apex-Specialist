@@ -1,6 +1,6 @@
 public class ParseEquipment {
 
-	public String x_id {get;set;} // in json: _id
+	public String x_id {get;set;}
 	public Boolean replacement {get;set;} 
 	public Integer quantity {get;set;} 
 	public String name {get;set;} 
@@ -36,7 +36,12 @@ public class ParseEquipment {
 		}
 	}
 
-    private static List<ParseEquipment> arrayOfJSON2Apex(System.JSONParser p) {
+	public static List<ParseEquipment> parse(String json) {
+		System.JSONParser parser = System.JSON.createParser(json);
+		return arrayOfEquipment(parser);
+	}
+
+    private static List<ParseEquipment> arrayOfEquipment(System.JSONParser p) {
         List<ParseEquipment> res = new List<ParseEquipment>();
         if (p.getCurrentToken() == null) p.nextToken();
         while (p.nextToken() != System.JSONToken.END_ARRAY) {
@@ -44,6 +49,4 @@ public class ParseEquipment {
         }
         return res;
     }
-
-
 }
