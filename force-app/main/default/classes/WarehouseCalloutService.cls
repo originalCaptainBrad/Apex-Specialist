@@ -41,14 +41,11 @@ global class WarehouseCalloutService implements Queueable, Database.AllowsCallou
 
         for(JSON2Apex inv : parseItems){
 
-            product2 prod = productInventory.get(inv.x_id);
-            if(prod != null){
-                //product2 prod = product[0];
-                prod.Replacement_Part__c = inv.replacement;
-                prod.Cost__c = inv.cost;
-                prod.Current_Inventory__c = inv.quantity;
-                prod.Lifespan_Months__c = inv.lifespan;
-                prod.Maintenance_Cycle__c = inv.maintenanceperiod;
+            product2 productToSku = productInventory.get(inv.sku);
+            system.debug('Product is : '+prod);
+            system.debug('productToSku is : '+productToSku);
+            if(prod != null || productToSku != null){
+                prod = updateProducts(prod, inv);
 
                 lstInventoryToUpdate.add(prod);
             } else if(prod == null){
@@ -59,9 +56,19 @@ global class WarehouseCalloutService implements Queueable, Database.AllowsCallou
                     prod2.Current_Inventory__c = inv.quantity;
                     prod2.Lifespan_Months__c = inv.lifespan;
                     prod2.Maintenance_Cycle__c = inv.maintenanceperiod;
+                	prod2.Warehouse_SKU__c = inv.sku;
                     lstInventoryToUpdate.add(prod2);
             }
         }
         return lstInventoryToUpdate;
+    }
+    
+    public static Product2 updateProducts(Product2 prod, JSON2Apex inv){
+                prod.Replacement_Part__c = inv.replacement;
+                prod.Cost__c = inv.cost;
+                prod.Current_Inventory__c = inv.quantity;
+                prod.Lifespan_Months__c = inv.lifespan;
+                prod.Maintenance_Cycle__c = inv.maintenanceperiod;
+                return prod;
     }
 }
