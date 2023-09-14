@@ -1,7 +1,6 @@
 @isTest
 private class MaintenanceRequestHelperTest {
 
-    //Create test variables and test collections to access throughtout the test class
     @TestVisible private static Vehicle__c vehicle = new Vehicle__c();
     @TestVisible private static Case request = new Case();
     @TestVisible private static Map<Id,Case> requestMap = new Map<Id,Case>();
@@ -11,7 +10,6 @@ private class MaintenanceRequestHelperTest {
 
     @TestSetup
     static void setup(){
-        //Create test data to access throughtout the test methods
         num = 10;
         TestDataFactory.generateMaintanceRequestdata(num);
     }
@@ -35,7 +33,6 @@ private class MaintenanceRequestHelperTest {
         }
         Test.stopTest();
 
-        // Verify records are created
         List<Case> newCases = [SELECT Id FROM Case WHERE Status = 'New'];
         List<Equipment_Maintenance_Item__c> itemRecords = [SELECT Id FROM Equipment_Maintenance_Item__c WHERE Maintenance_Request__c = :newCases[0].Id];
         System.assertEquals(11, itemRecords.size());
