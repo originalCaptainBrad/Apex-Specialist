@@ -9,3 +9,5 @@ Project Overview
 - "WarehouseCalloutServiceMock" was created to mock a real callout response for testing purposes.
 - "WarehouseSyncSchedule" implements the schedulable interface and allows me to schedule the WarehouseCalloutService class to be programmed programmatically through APEX.
 - ALL APEX CONTROLLERS HAVE A CORRISPONDING APEX TEST CLASS.
+- "StaticResource.Warehouse_Callout_Mock" Was added to show best practices when dealing with test data. This txt file is the same text that is return from the actual response.
+- "External_Equipment_Integration__mdt" Record was added so that multiple headers could be added to the request body. This wasn't required I just thought it was a nice extra touch on the project.
