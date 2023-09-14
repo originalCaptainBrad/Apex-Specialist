@@ -3,8 +3,11 @@ global class WarehouseCalloutService implements Queueable, Database.AllowsCallou
     public void execute(QueueableContext context) {
 
         HttpResponse httpBody = makeCallout();
+
         String responseBody = httpBody.getBody();
+
         List<JSON2Apex> parseEquipment = JSON2Apex.parse(responseBody);
+        
         List<Product2> inventoriesToUpdate = parseNewInventory(parseEquipment);
 
         upsert inventoriesToUpdate;
@@ -40,15 +43,19 @@ global class WarehouseCalloutService implements Queueable, Database.AllowsCallou
         list<product2> lstInventoryToUpdate = new list<product2>();
 
         for(JSON2Apex inv : parseItems){
-
+            system.debug('Inventory = '+inv);
             product2 productToSku = productInventory.get(inv.sku);
-            system.debug('Product is : '+prod);
             system.debug('productToSku is : '+productToSku);
-            if(prod != null || productToSku != null){
-                prod = updateProducts(prod, inv);
+            if(productToSku != null){
+                productToSku.Replacement_Part__c = inv.replacement;
+                productToSku.Cost__c = inv.cost;
+                productToSku.Current_Inventory__c = inv.quantity;
+                productToSku.Lifespan_Months__c = inv.lifespan;
+                productToSku.Maintenance_Cycle__c = inv.maintenanceperiod;
+                //prod = updateProducts(prod, inv);
 
-                lstInventoryToUpdate.add(prod);
-            } else if(prod == null){
+                lstInventoryToUpdate.add(productToSku);
+            } else if(productToSku == null){
                 product2 prod2 = new product2();
                     prod2.Name = inv.name;
                     prod2.Replacement_Part__c = inv.replacement;
