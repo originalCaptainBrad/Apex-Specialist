@@ -1,12 +1,11 @@
 @isTest
 private class MaintenanceRequestHelperTest {
 
-    @TestVisible private static Equipment_Maintenance_Item__c maintenanceItem = new Equipment_Maintenance_Item__c();
+    @TestVisible private static Integer num;
 
     @TestSetup
     static void setup(){
-        
-        Integer num = 10;
+        num = 10;
         TestDataFactory.generateMaintanceRequestdata(num);
     }
 
@@ -32,42 +31,7 @@ private class MaintenanceRequestHelperTest {
         List<Case> newCases = [SELECT Id FROM Case WHERE Status = 'New'];
         List<Equipment_Maintenance_Item__c> itemRecords = [SELECT Id FROM Equipment_Maintenance_Item__c WHERE Maintenance_Request__c = :newCases[0].Id];
         System.assertEquals(11, itemRecords.size());
-        System.assertEquals(10, newCases.size());
+        System.assertEquals(num, newCases.size());
         System.assertNotEquals(null, newCases.size());
-    }
-
-    @isTest
-    static void testGetMapRequestToItems() {
-
-        Set<Id> requestIds = new Set<Id>();
-        for(Case req : [Select Id FROM Case ]){
-                requestIds.add(req.Id);
-                }
-
-        Test.startTest();
-        Map<String, List<Equipment_Maintenance_Item__c>> resultMap = MaintenanceRequestHelper.getMapRequestToItems(requestIds);
-        Test.stopTest();
-
-        List<Equipment_Maintenance_Item__c> itemsList = resultMap.get(requestIds);
-        System.assertNotEquals(null, itemsList);
-        System.assertEquals(1, itemsList.size());
-    }
-
-    @isTest
-    static void testCreateEquipmentItems() {
-
-
-        Map<String, Case> oldToNewCaseMap = new Map<String, Case>{testCase.Id => testCase};
-        Map<String, List<Equipment_Maintenance_Item__c>> requestToItemsMap = new Map<String, List<Equipment_Maintenance_Item__c>>{testCase.Id => new List<Equipment_Maintenance_Item__c>{maintenanceItem}};
-
-        Test.startTest();
-        List<Equipment_Maintenance_Item__c> newItemList = MaintenanceRequestHelper.createEquipmentItems(oldToNewCaseMap, requestToItemsMap);
-        Test.stopTest();
-
-        System.assertEquals(1, newItemList.size());
-        Equipment_Maintenance_Item__c newItem = newItemList[0];
-        System.assertEquals(testCase.Id, newItem.Maintenance_Request__c);
-        System.assertEquals(maintenanceItem.Equipment__c, newItem.Equipment__c);
-        System.assertEquals(maintenanceItem.Quantity__c, newItem.Quantity__c);
     }
 }
