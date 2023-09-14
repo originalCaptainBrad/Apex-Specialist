@@ -35,7 +35,7 @@ public class ParseEquipment {
             }
         }
     }
-
+    
     public static List<ParseEquipment> parse(String json) {
         System.JSONParser parser = System.JSON.createParser(json);
         return arrayOfEquipment(parser);
