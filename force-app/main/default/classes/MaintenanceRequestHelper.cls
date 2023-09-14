@@ -1,6 +1,5 @@
 public with sharing class MaintenanceRequestHelper {
-    // Integer j = 0;
-    // integer k = 0;
+
     public static void createWorkOrders(Map<Id, Case> mapMaintanceRequests) {
         set<Id> setRequests = mapMaintanceRequests.keySet();
         List<case> lstNewRequests = new List<Case>();
@@ -8,66 +7,54 @@ public with sharing class MaintenanceRequestHelper {
         Map<String, Case> mapOldToNewRequests = new Map<String, Case>();
 
         for(Case maintanceRequest : [
-                Select Id, Vehicle__c, Product__c, Type, Subject, Status, 
-                (SELECT Id, Maintenance_Request__c, Equipment__c,Equipment__r.Maintenance_Cycle__c, Quantity__c
-                FROM Equipment_Maintenance_Items__r) 
-                FROM Case 
-                WHERE Id =:setRequests]){
-                    
-                    List<Equipment_Maintenance_Item__c> lstMaintenanceItems = maintanceRequest.Equipment_Maintenance_Items__r;
-
-                    for(Equipment_Maintenance_Item__c item : lstMaintenanceItems){
-                        System.debug('item = '+item);
-                    }
-                Decimal dueDate;
-                Integer i = 0;
-                if(!lstMaintenanceItems.isEmpty()){
-                    do {
-                        Decimal cycle = lstMaintenanceItems[i].Equipment__r.Maintenance_Cycle__c;
-                        System.debug('cycle '+i+' = '+cycle);
-                        if(cycle != null && !lstMaintenanceItems.isEmpty()){
-                            if(dueDate == null){
-                                dueDate = cycle;
-                            } else if(dueDate > cycle){
-                                dueDate = cycle;
-                            }
-                        }
-                        
-                            System.debug('dueDate' + dueDate);
-                        
-                            i++;
-                        } while (i < lstMaintenanceItems.size());
-                }
-
-                System.debug('dueDate = '+dueDate);
-                if(maintanceRequest.Type.Contains('repair') || maintanceRequest.Type.Contains('Routine Maintenance') && maintanceRequest.Status == 'Closed'){
-
-                    Case newRequest = new Case(
-                        Vehicle__c = maintanceRequest.Vehicle__c,
-                        Product__c = maintanceRequest.Product__c,
-                        Type = 'Routine Maintenance',
-                        Subject = maintanceRequest.Subject,
-                        Status = 'New'
-                        );
-                        Date today = System.today();
-                        newRequest.Date_Due__c = today;
-                        if(!lstMaintenanceItems.isEmpty()){
-                            Date nextDueDate = today.addDays(Integer.valueOf(dueDate));
-                            newRequest.Date_Due__c = nextDueDate;
-                        }
-
-                        lstNewRequests.add(newRequest);
-                        mapOldToNewRequests.put(String.valueOf(maintanceRequest.Id), newRequest);  
-                }
+            SELECT Id, Vehicle__c, Product__c, Type, Subject, Status, 
+            (SELECT Id, Maintenance_Request__c, Equipment__c,Equipment__r.Maintenance_Cycle__c, Quantity__c
+            FROM Equipment_Maintenance_Items__r) 
+            FROM Case 
+            WHERE Id =:setRequests]){
                 
+            List<Equipment_Maintenance_Item__c> lstMaintenanceItems = maintanceRequest.Equipment_Maintenance_Items__r;
+            Decimal dueDate;
+            Integer i = 0;
+            
+            if(!lstMaintenanceItems.isEmpty()){
+                do {
+                    Decimal cycle = lstMaintenanceItems[i].Equipment__r.Maintenance_Cycle__c;
+                    if(cycle != null && !lstMaintenanceItems.isEmpty()){
+                        if(dueDate == null){
+                            dueDate = cycle;
+                        } else if(dueDate > cycle){
+                            dueDate = cycle;
+                        }
+                    }                        
+                        i++;
+                    } while (i < lstMaintenanceItems.size());
             }
+
+            if(maintanceRequest.Type.Contains('repair') || maintanceRequest.Type.Contains('Routine Maintenance') && maintanceRequest.Status == 'Closed'){
+
+                Case newRequest = new Case(
+                    Vehicle__c = maintanceRequest.Vehicle__c,
+                    Product__c = maintanceRequest.Product__c,
+                    Type = 'Routine Maintenance',
+                    Subject = maintanceRequest.Subject,
+                    Status = 'New'
+                    );
+                    Date today = System.today();
+                    newRequest.Date_Due__c = today;
+                    if(!lstMaintenanceItems.isEmpty()){
+                        Date nextDueDate = today.addDays(Integer.valueOf(dueDate));
+                        newRequest.Date_Due__c = nextDueDate;
+                    }
+
+                    lstNewRequests.add(newRequest);
+                    mapOldToNewRequests.put(String.valueOf(maintanceRequest.Id), newRequest);  
+            }
+            
+        }
             Insert lstNewRequests;
             List<Equipment_Maintenance_Item__c> lstMaintenanceItemsToUpdate = createEquipmentItems(mapOldToNewRequests,mapMaintanceToItems);
             Insert lstMaintenanceItemsToUpdate;
-            System.debug('lstNewRequests = '+lstNewRequests);
-            System.debug('lstMaintenanceItemsToUpdate = '+lstMaintenanceItemsToUpdate);
-            // j++;
-            // System.debug('@#$ maintanceRequest fired j = '+j);
     }
 
 
@@ -79,8 +66,6 @@ public with sharing class MaintenanceRequestHelper {
             FROM Case 
             WHERE Id =:requests]);
 
-            // k++;
-            // system.debug('@#$ getMapRequestToItems query Fired k = '+k);
         Map<String,List<Equipment_Maintenance_Item__c>> mapCaseToItems = new Map<String,List<Equipment_Maintenance_Item__c>>();
         for(String key : maintanceRequest.keyset()){
 
@@ -112,7 +97,4 @@ public with sharing class MaintenanceRequestHelper {
         }
       return newMaintenanceItems;  
     }
-
-
-    
 }
